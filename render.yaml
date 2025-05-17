@@ -1,4 +1,4 @@
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               services:
+services:
   - type: web
     name: my-laravel-app
     runtime: docker
@@ -7,15 +7,27 @@
     envVars:
       - key: APP_ENV
         value: production
+      - key: APP_DEBUG
+        value: false
       - key: APP_KEY
-        fromFile: .env
+        generateValue: true  # Let Render generate a fresh key if missing
+      
+      # TiDB Cloud Database Configuration
       - key: DB_CONNECTION
-        value: pgsql
+        value: mysql
       - key: DB_HOST
-        fromFile: .env
+        value: gateway01.us-west-2.prod.aws.tidbcloud.com
+      - key: DB_PORT
+        value: "4000"  # TiDB Cloud's port
       - key: DB_DATABASE
-        fromFile: .env
+        value: test
       - key: DB_USERNAME
-        fromFile: .env
+        value: 3Y88Pry6Vd25MD5.root
       - key: DB_PASSWORD
-        fromFile: .env
+        sync: false  # Never commit passwords to version control!
+      
+      # Required SSL Configuration for TiDB Cloud
+      - key: MYSQL_ATTR_SSL_CA
+        value: /etc/ssl/certs/ca-certificates.crt
+      - key: MYSQL_ATTR_SSL_VERIFY_SERVER_CERT
+        value: "true"
