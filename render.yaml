@@ -1,12 +1,14 @@
 services:
   - type: web
     name: my-laravel-app
-    runtime: docker
-    dockerfilePath: Dockerfile
+    runtime: node
     buildCommand: |
-      chmod +x deploy.sh
-      ./deploy.sh
-    startCommand: "apache2-foreground"
+      npm install
+      npm run build
+      composer install --no-dev --optimize-autoloader
+      php artisan key:generate
+    startCommand: |
+      php artisan serve --host=0.0.0.0 --port=8000
     envVars:
       - key: APP_ENV
         value: production
@@ -15,7 +17,7 @@ services:
       - key: APP_KEY
         generateValue: true
       
-      # TiDB Cloud Configuration
+      # Database configuration
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
@@ -28,17 +30,3 @@ services:
         value: 3Y88Pry6Vd25MD5.root
       - key: DB_PASSWORD
         sync: false
-      
-      # SSL Configuration
-      - key: MYSQL_ATTR_SSL_CA
-        value: /etc/ssl/certs/ca-certificates.crt
-      - key: MYSQL_ATTR_SSL_VERIFY_SERVER_CERT
-        value: "true"
-      
-      # Additional Optimizations
-      - key: CACHE_DRIVER
-        value: file
-      - key: SESSION_DRIVER
-        value: file
-      - key: QUEUE_CONNECTION
-        value: sync
