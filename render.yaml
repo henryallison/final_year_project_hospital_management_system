@@ -2,32 +2,43 @@ services:
   - type: web
     name: my-laravel-app
     runtime: docker
-    buildCommand: "./deploy.sh"
-    startCommand: "php artisan serve --host=0.0.0.0 --port=8000"
+    dockerfilePath: Dockerfile
+    buildCommand: |
+      chmod +x deploy.sh
+      ./deploy.sh
+    startCommand: "apache2-foreground"
     envVars:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
       - key: APP_KEY
-        generateValue: true  # Let Render generate a fresh key if missing
+        generateValue: true
       
-      # TiDB Cloud Database Configuration
+      # TiDB Cloud Configuration
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
         value: gateway01.us-west-2.prod.aws.tidbcloud.com
       - key: DB_PORT
-        value: "4000"  # TiDB Cloud's port
+        value: "4000"
       - key: DB_DATABASE
         value: test
       - key: DB_USERNAME
         value: 3Y88Pry6Vd25MD5.root
       - key: DB_PASSWORD
-        sync: false  # Never commit passwords to version control!
+        sync: false
       
-      # Required SSL Configuration for TiDB Cloud
+      # SSL Configuration
       - key: MYSQL_ATTR_SSL_CA
         value: /etc/ssl/certs/ca-certificates.crt
       - key: MYSQL_ATTR_SSL_VERIFY_SERVER_CERT
         value: "true"
+      
+      # Additional Optimizations
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
