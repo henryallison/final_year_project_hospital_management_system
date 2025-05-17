@@ -13,38 +13,26 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    libzip-dev
-
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+    libzip-dev \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy existing application directory contents
+# Copy application files
 COPY . .
 
-# Install PHP dependencies
+# Install dependencies (excluding dev dependencies)
 RUN composer install --no-dev --optimize-autoloader
 
-# Generate application key
-RUN php artisan key:generate
-
 # Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage
-RUN chmod -R 775 /var/www/html/storage
+RUN chown -R www-data:www-data storage bootstrap/cache
+RUN chmod -R 775 storage bootstrap/cache
 
-# Enable Apache rewrite module
+# Enable Apache rewrite
 RUN a2enmod rewrite
+COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
-# Configure Apache
-COPY docker/000-default.conf /etc/apache2/sites-available/000-default.conf
-
-# Expose port 80
 EXPOSE 80
-
-# Start Apache
 CMD ["apache2-foreground"]
