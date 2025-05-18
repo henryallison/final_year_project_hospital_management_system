@@ -100,14 +100,26 @@
             <h4 class="mb-3">Assigned Staff</h4>
             <div class="table-responsive">
                 <table class="table table-bordered">
-                    <tr>
-                        <th>Doctor</th>
-                        <td>{{ $patient->doctor ? $patient->doctor->name : 'Unassigned' }}</td>
-                    </tr>
-                    <tr>
-                        <th>Nurse</th>
-                        <td>{{ $patient->nurse ? $patient->nurse->name : 'Unassigned' }}</td>
-                    </tr>
+                   <tr>
+    <th>Doctor</th>
+    <td>
+        @if($patient->doctor)
+            {{ $patient->doctor->first_name }} {{ $patient->doctor->last_name }}
+        @else
+            Unassigned
+        @endif
+    </td>
+</tr>
+<tr>
+    <th>Nurse</th>
+    <td>
+        @if($patient->nurse)
+            {{ $patient->nurse->first_name }} {{ $patient->nurse->last_name }}
+        @else
+            Unassigned
+        @endif
+    </td>
+</tr>
                 </table>
             </div>
         </div>
