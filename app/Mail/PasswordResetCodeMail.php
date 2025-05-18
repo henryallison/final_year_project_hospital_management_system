@@ -29,7 +29,7 @@ class PasswordResetCodeMail extends Mailable implements ShouldQueue
         // Ensure expiration time is in Kigali timezone
         $this->expiresAt = $expiresAt ?? Carbon::now('Africa/Kigali')->addMinutes(15)->format('F j, Y, g:i a T');
         $this->appName = config('app.name');
-        $this->supportEmail = config('mail.support_email', 'support@example.com');
+        $this->supportEmail = config('mail.support_email', 'hyallison5050@gmail.com');
     }
 
 
