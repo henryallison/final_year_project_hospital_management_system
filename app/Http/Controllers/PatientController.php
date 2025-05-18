@@ -124,6 +124,28 @@ class PatientController extends Controller
         return redirect()->route('patients.index')->with('success', 'Patient added successfully.');
     }
 
+public function showDetails(Patient $patient)
+{
+    try {
+        $decryptedData = json_decode(Crypt::decryptString($patient->encrypted_data), true);
+    } catch (\Exception $e) {
+        $decryptedData = [
+            'blood_type' => 'N/A',
+            'height' => 'N/A',
+            'weight' => 'N/A',
+            'chronic_conditions' => 'N/A',
+            'family_medical_history' => 'N/A',
+            'contact_number' => 'N/A',
+            'address' => 'N/A'
+        ];
+    }
+
+    return view('patients.details', [
+        'patient' => $patient,
+        'decryptedData' => $decryptedData
+    ]);
+}
+
     /**
      * Show the form for editing a patient.
      */
