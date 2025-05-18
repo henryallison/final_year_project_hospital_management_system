@@ -11,7 +11,7 @@ services:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
-        value: false
+        value: true
       - key: APP_KEY
         generateValue: true
       
@@ -27,7 +27,7 @@ services:
       - key: DB_USERNAME
         value: 3Y88Pry6Vd25MD5.root
       - key: DB_PASSWORD
-        sync: false
+        sync: true
       
       # SSL Configuration
       - key: MYSQL_ATTR_SSL_CA
