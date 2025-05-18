@@ -3,7 +3,7 @@
 @section('content')
 <div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-12 col-md-8"> <!-- Changed to col-12 for better mobile handling -->
             <div class="card shadow-sm">
                 <div class="card-header bg-white border-0 py-3">
                     <div class="d-flex justify-content-between align-items-center">
@@ -14,30 +14,30 @@
                     </div>
                 </div>
 
-                <div class="card-body p-4">
+                <div class="card-body p-3"> <!-- Reduced padding for mobile -->
                     <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
                         <!-- Profile Image Upload -->
                         <div class="text-center mb-4">
-                            <div class="avatar-upload mx-auto">
+                            <div class="avatar-upload mx-auto" style="max-width: 150px;">
                                 <div class="avatar-preview rounded-circle"
-                                     style="background-image: url('{{ $user->profile_image ? asset('storage/'.$user->profile_image) : asset('images/default-avatar.png') }}');">
+                                     style="width: 120px; height: 120px; background-size: cover; background-position: center; background-image: url('{{ $user->profile_image ? asset('storage/'.$user->profile_image) : asset('images/default-avatar.png') }}');">
                                 </div>
-                                <label for="profile_image" class="avatar-edit btn btn-primary mt-3">
+                                <label for="profile_image" class="btn btn-primary mt-3 w-100">
                                     <i class="fas fa-camera me-2"></i> Change Photo
-                                    <input type="file" id="profile_image" name="profile_image" accept=".png, .jpg, .jpeg">
+                                    <input type="file" id="profile_image" name="profile_image" accept=".png, .jpg, .jpeg" class="d-none">
                                 </label>
                                 @error('profile_image')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    <div class="invalid-feedback d-block text-center">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
 
                         <!-- Personal Information -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
+                        <div class="row g-2"> <!-- Added g-2 for consistent gutter spacing -->
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="first_name" class="form-label">First Name</label>
                                 <input type="text" class="form-control @error('first_name') is-invalid @enderror"
                                        id="first_name" name="first_name"
@@ -47,7 +47,7 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="last_name" class="form-label">Last Name</label>
                                 <input type="text" class="form-control @error('last_name') is-invalid @enderror"
                                        id="last_name" name="last_name"
@@ -68,8 +68,8 @@
                             @enderror
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
+                        <div class="row g-2">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="date_of_birth" class="form-label">Date of Birth</label>
                                 <input type="date" class="form-control @error('date_of_birth') is-invalid @enderror"
                                        id="date_of_birth" name="date_of_birth"
@@ -79,7 +79,7 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="phone" class="form-label">Phone Number</label>
                                 <input type="text" class="form-control @error('phone') is-invalid @enderror"
                                        id="phone" name="phone"
@@ -90,8 +90,8 @@
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
+                        <div class="row g-2">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="gender" class="form-label">Gender</label>
                                 <select class="form-select @error('gender') is-invalid @enderror" id="gender" name="gender">
                                     <option value="">Select Gender</option>
@@ -116,7 +116,7 @@
 
                         <!-- Password Change Section -->
                         <div class="card bg-light border-0 mb-4">
-                            <div class="card-body">
+                            <div class="card-body p-3"> <!-- Reduced padding -->
                                 <h5 class="card-title mb-3">Change Password</h5>
 
                                 <div class="mb-3">
@@ -146,7 +146,7 @@
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <button type="submit" class="btn btn-primary px-4">
+                            <button type="submit" class="btn btn-primary px-4 w-100 w-md-auto"> <!-- Added w-100 for mobile -->
                                 <i class="fas fa-save me-2"></i> Update Profile
                             </button>
                         </div>
@@ -157,39 +157,7 @@
     </div>
 </div>
 
-@push('styles')
-<style>
-    .avatar-upload {
-        position: relative;
-        max-width: 150px;
-    }
-    .avatar-preview {
-        width: 150px;
-        height: 150px;
-        background-size: cover;
-        background-position: center;
-        border: 3px solid #f0f0f0;
-        margin: 0 auto;
-    }
-    .avatar-edit {
-        position: relative;
-        overflow: hidden;
-    }
-    .avatar-edit input {
-        position: absolute;
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-    .card {
-        border-radius: 10px;
-    }
-    .form-label {
-        font-weight: 500;
-    }
-</style>
-@endpush
-
+@push('scripts')
 @push('scripts')
 <script>
     // Preview profile image before upload
@@ -206,6 +174,40 @@
             reader.readAsDataURL(file);
         }
     });
+
+    // Password field validation logic
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const currentPass = document.getElementById('current_password').value;
+        const newPass = document.getElementById('password').value;
+        const confirmPass = document.getElementById('password_confirmation').value;
+
+        // Check if any password field has content
+        if (currentPass || newPass || confirmPass) {
+            // Validate that all fields are filled
+            if (!currentPass || !newPass || !confirmPass) {
+                e.preventDefault();
+                alert('Please fill all password fields if you want to change your password');
+                return false;
+            }
+
+            // Validate that new passwords match
+            if (newPass !== confirmPass) {
+                e.preventDefault();
+                alert('New password and confirmation password do not match');
+                return false;
+            }
+
+            // Validate password strength (optional)
+            if (newPass.length < 8) {
+                e.preventDefault();
+                alert('Password must be at least 8 characters long');
+                return false;
+            }
+        }
+
+        return true;
+    });
 </script>
+@endpush
 @endpush
 @endsection
