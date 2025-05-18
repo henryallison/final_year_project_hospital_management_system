@@ -72,7 +72,7 @@
                 <td>{{ $user->license_number }}</td>
                 <td>{{ $user->phone }}</td>
                 <td>{{ $user->address }}</td>
-                <td>{{ $user->date_of_birth }}</td>
+                <td>{{ $user->date_of_birth ? \Carbon\Carbon::parse($user->date_of_birth)->format('Y-m-d') : '' }}</td>                
                 <td>{{ ucfirst($user->gender) }}</td>
                 <td>{{ $user->is_active ? 'Yes' : 'No' }}</td>
                 <td>{{ $user->last_login_at ? $user->last_login_at->format('Y-m-d H:i:s') : 'Awaiting login' }}</td> <!-- Last Login -->
