@@ -1,10 +1,8 @@
-# Use official PHP image with Apache
 FROM php:8.2-apache
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Install system dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -13,26 +11,23 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    libzip-dev \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy application files
+# Copy files
 COPY . .
 
-# Install dependencies (excluding dev dependencies)
+# Install dependencies
 RUN composer install --no-dev --optimize-autoloader
 
 # Set permissions
-RUN chown -R www-data:www-data storage bootstrap/cache
-RUN chmod -R 775 storage bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage
+RUN chmod -R 775 /var/www/html/storage
 
-# Enable Apache rewrite
+# Enable Apache modules
 RUN a2enmod rewrite
-COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
 EXPOSE 80
 CMD ["apache2-foreground"]
