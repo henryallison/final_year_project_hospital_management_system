@@ -152,7 +152,7 @@ Route::prefix('profile')->group(function() {
     Route::put('/', [AppointmentController::class, 'updateProfile'])->name('profile.update');
 });
 Route::resource('tasks', 'App\Http\Controllers\TaskController');
-
+Route::get('/patients/{patient}/details', [PatientController::class, 'showDetails'])->name('patients.details');
 // Debug Route for Admin Code
 Route::get('/debug-admin-code', function() {
     return response()->json([
