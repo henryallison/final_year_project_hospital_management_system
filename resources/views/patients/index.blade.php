@@ -145,6 +145,9 @@ use Illuminate\Support\Facades\Crypt;
         <a href="{{ route('patients.edit', $patient->id) }}" class="btn btn-warning btn-sm">Edit</a>
     @endif
 
+    <!-- Add this View button -->
+    <button class="btn btn-info btn-sm view-patient" data-patient-id="{{ $patient->id }}">View</button>
+
     @if(auth()->user()->isAdmin())
         <form action="{{ route('patients.destroy', $patient->id) }}" method="POST" style="display:inline-block;">
             @csrf
@@ -162,7 +165,28 @@ use Illuminate\Support\Facades\Crypt;
         </table>
     </div>
 </div>
-
+<!-- Patient Details Modal -->
+<div class="modal fade" id="patientDetailsModal" tabindex="-1" aria-labelledby="patientDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="patientDetailsModalLabel">Patient Full Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="patientDetailsContent">
+                <!-- Content will be loaded here via AJAX -->
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Modal for displaying full content -->
 <div class="modal fade" id="contentModal" tabindex="-1" aria-labelledby="contentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -290,6 +314,36 @@ use Illuminate\Support\Facades\Crypt;
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+
+    // Add this to your existing $(document).ready() function
+$(document).on('click', '.view-patient', function() {
+    const patientId = $(this).data('patient-id');
+    const modal = $('#patientDetailsModal');
+
+    // Show loading spinner
+    $('#patientDetailsContent').html(`
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    `);
+
+    // Show modal
+    modal.modal('show');
+
+    // Load patient details via AJAX
+    $.get(`/patients/${patientId}/details`, function(data) {
+        $('#patientDetailsContent').html(data);
+    }).fail(function() {
+        $('#patientDetailsContent').html(`
+            <div class="alert alert-danger">
+                Failed to load patient details. Please try again.
+            </div>
+        `);
+    });
+});
+
 $(document).ready(function() {
     var table = $('#patientsTable').DataTable({
         dom: 'rtip', // Removed 'Bf' to hide built-in buttons and filter
