@@ -35,52 +35,50 @@
     </div>
 </div>
 
-</div>
-    <div class="profile-name-container mt-3">
-        <h4 class="mb-1">{{ $user->first_name }} {{ $user->last_name }}</h4>
-        <div class="role-badge">{{ ucfirst($user->role) }}</div>
-    </div>
+<div class="profile-name-container mt-3 text-center text-md-start">
+    <h4 class="mb-1">{{ $user->first_name }} {{ $user->last_name }}</h4>
+    <div class="role-badge d-inline-block mt-2">{{ ucfirst($user->role) }}</div>
 </div>
 
-                        <!-- Profile Details -->
-                        <div class="col-md-8">
-                            <div class="profile-details">
-                                <div class="detail-item">
-                                    <span class="detail-label">Email</span>
-                                    <span class="detail-value">{{ $user->email }}</span>
-                                </div>
+<!-- Profile Details -->
+<div class="col-12 col-md-8 mt-3 mt-md-0">
+    <div class="profile-details">
+        <div class="row">
+            <div class="col-12 col-sm-6">
+                <div class="detail-item mb-3">
+                    <div class="detail-label fw-bold">Email</div>
+                    <div class="detail-value text-break">{{ $user->email }}</div>
+                </div>
 
-                                <div class="detail-item">
-                                    <span class="detail-label">Phone</span>
-                                    <span class="detail-value">{{ $user->phone ?? 'Not provided' }}</span>
-                                </div>
+                <div class="detail-item mb-3">
+                    <div class="detail-label fw-bold">Phone</div>
+                    <div class="detail-value">{{ $user->phone ?? 'Not provided' }}</div>
+                </div>
+            </div>
 
-                                <div class="detail-item">
-                                    <span class="detail-label">Date of Birth</span>
-                                    <span class="detail-value">
-                                        @if($user->date_of_birth)
-                                            {{ \Carbon\Carbon::parse($user->date_of_birth)->format('F j, Y') }}
-                                        @else
-                                            Not provided
-                                        @endif
-                                    </span>
-                                </div>
-
-                                <div class="detail-item">
-                                    <span class="detail-label">Address</span>
-                                    <span class="detail-value">{{ $user->address ?? 'Not provided' }}</span>
-                                </div>
-
-                                @if($user->license_number)
-                                <div class="detail-item">
-                                    <span class="detail-label">License Number</span>
-                                    <span class="detail-value">{{ $user->license_number }}</span>
-                                </div>
-                                @endif
-                            </div>
-                        </div>
+            <div class="col-12 col-sm-6">
+                <div class="detail-item mb-3">
+                    <div class="detail-label fw-bold">Date of Birth</div>
+                    <div class="detail-value">
+                        @if($user->date_of_birth)
+                            {{ \Carbon\Carbon::parse($user->date_of_birth)->format('F j, Y') }}
+                        @else
+                            Not provided
+                        @endif
                     </div>
                 </div>
+
+                <div class="detail-item mb-3">
+                    <div class="detail-label fw-bold">Address</div>
+                    <div class="detail-value">{{ $user->address ?? 'Not provided' }}</div>
+                </div>
+
+                @if($user->license_number)
+                <div class="detail-item mb-3">
+                    <div class="detail-label fw-bold">License Number</div>
+                    <div class="detail-value">{{ $user->license_number }}</div>
+                </div>
+                @endif
             </div>
         </div>
     </div>
