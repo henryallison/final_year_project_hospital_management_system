@@ -87,24 +87,29 @@
                                     <input type="password" name="password_confirmation" class="form-control">
                                 </div>
                             </div>
-                        <div class="col-md-6" style="padding-top: 20px;">
+                        <div class="col-md-6">
     <div class="form-group floating-label" style="position: relative;">
         <!-- Profile Image Upload -->
-                        <div class="text-center mb-4">
-                            <div class="avatar-upload mx-auto">
-                                <div class="avatar-preview rounded-circle"
-                                     style="background-image: url('{{ $user->profile_image ? asset('storage/'.$user->profile_image) : asset('images/default-avatar.png') }}');">
-                                </div>
-                                <label for="profile_image" class="avatar-edit btn btn-primary mt-3">
-                                    <i class="fas fa-camera me-2"></i> Change Photo
-                                    <input type="file" id="profile_image" name="profile_image" accept=".png, .jpg, .jpeg">
-                                </label>
-                                @error('profile_image')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
+        <div class="d-flex flex-column align-items-center">
+            <div class="avatar-preview mb-3 rounded-circle"
+                 style="width: 120px;
+                        height: 120px;
+                        background-size: cover;
+                        background-position: center;
+                        background-image: url('{{ $user->profile_image ? asset('storage/'.$user->profile_image) : asset('images/default-avatar.png') }}');">
+            </div>
 
+            <div class="w-100">
+                <label for="profile_image" class="form-label">{{ __('Profile Image') }}</label>
+                <input type="file" id="profile_image"
+                       class="form-control @error('profile_image') is-invalid @enderror"
+                       name="profile_image" accept="image/*">
+                @error('profile_image')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+        </div>
+    </div>
 </div>
 
 
