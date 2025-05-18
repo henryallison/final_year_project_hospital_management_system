@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 @php
 use Illuminate\Support\Facades\Crypt;
