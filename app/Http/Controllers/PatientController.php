@@ -140,6 +140,9 @@ public function showDetails(Patient $patient)
         ];
     }
 
+    // Eager load the relationships
+    $patient->load(['doctor', 'nurse']);
+
     return view('patients.details', [
         'patient' => $patient,
         'decryptedData' => $decryptedData
