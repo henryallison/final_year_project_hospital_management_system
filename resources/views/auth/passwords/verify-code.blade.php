@@ -7,7 +7,7 @@
         background-size: cover;
         min-height: 100vh;
     }
-
+    
     /* Mobile-responsive card styles */
     .card {
         background-color: rgba(255, 255, 255, 0.95);
@@ -30,7 +30,7 @@
         font-size: 1.2rem;
         text-align: center;
     }
-
+    
     /* Error message styling */
     .error-message {
         color: #dc3545;
@@ -38,23 +38,23 @@
         margin-top: 0.25rem;
         display: none;
     }
-
+    
     /* Responsive breakpoints */
     @media (max-width: 768px) {
         .card-body {
             padding: 20px;
         }
-
+        
         .code-input {
             font-size: 1.1rem;
             height: 50px;
         }
-
+        
         .btn {
             padding: 12px;
             font-size: 16px;
         }
-
+        
         .card-header h4 {
             font-size: 1.25rem;
         }
@@ -97,7 +97,7 @@
                                    required autocomplete="off" autofocus
                                    maxlength="4" pattern="\d{4}" inputmode="numeric"
                                    placeholder="Enter 4-digit code">
-
+                            
                             <!-- Frontend error message container -->
                             <div id="codeError" class="error-message">
                                 Please enter a valid 4-digit code
@@ -135,7 +135,7 @@
             // Real-time validation
             codeInput.addEventListener('input', function() {
                 const isValid = /^\d{4}$/.test(this.value);
-
+                
                 if (this.value.length > 0 && !isValid) {
                     codeError.style.display = 'block';
                     this.classList.add('is-invalid');
