@@ -1,303 +1,174 @@
 <?php
 
-namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PatientController;
+use App\Http\Controllers\MedicationController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\DoctorController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\AdminAccessController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\LogController;
+use App\Http\Controllers\AppointmentController;
+/*
+|----------------------------------------------------------------------
+| Web Routes
+|----------------------------------------------------------------------
+*/
 
-use App\Models\Patient;
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Validation\Rule;
-
-class PatientController extends Controller
-{
-    /**
-     * Display a listing of patients.
-     */
-    public function index()
-{
-    $user = auth()->user();
-
-    if ($user->isDoctor()) {
-        // For doctors, only show their assigned patients
-        $patients = Patient::with(['doctor', 'nurse'])
-                    ->where('doctor_id', $user->id)
-                    ->get();
-    } elseif ($user->isAdmin()) {
-        // For admins, show all patients
-        $patients = Patient::with(['doctor', 'nurse'])->get();
-    } else {
-        // For other roles (like nurses), show patients assigned to them
-        $patients = Patient::with(['doctor', 'nurse'])
-                    ->where('nurse_id', $user->id)
-                    ->get();
-    }
-
-    return view('patients.index', compact('patients'));
-}
-    /**
-     * Show the form for creating a new patient.
-     */
-    public function create()
-    {
-        $doctors = User::where('role', 'doctor')->get();
-        $nurses = User::where('role', 'nurse')->get();
-        return view('patients.create', compact('doctors', 'nurses'));
-    }
-
-    /**
-     * Store a newly created patient in storage.
-     */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'date_of_birth' => 'required|date',
-            'gender' => 'required|in:male,female,other',
-            'contact_number' => [
-                'required',
-                'string',
-                'max:20',
-                function ($attribute, $value, $fail) {
-                    if (!preg_match('/^\+[0-9]{12,15}$/', $value)) {
-                        $fail('The contact number must start with + followed by 12 to 15 digits (e.g., +123456789012).');
-                    }
-                },
-                Rule::unique('patients', 'contact_number')
-            ],
-            'address' => 'required|string|max:255',
-            'medical_history' => 'required|string',
-            'allergies' => 'required|string',
-            'current_medications' => 'required|string',
-            'admission_date' => 'required|date',
-            'discharge_date' => 'nullable|date|after_or_equal:admission_date',
-            'status' => 'required|in:active,discharged,transferred',
-            'doctor_id' => 'required|exists:users,id',
-            'nurse_id' => 'nullable|exists:users,id',
-            'blood_type' => 'required|string|max:10',
-            'height' => 'required|numeric|min:50|max:250',
-            'weight' => 'required|numeric|min:2|max:300',
-            'chronic_conditions' => 'required|string',
-            'family_medical_history' => 'required|string'
-        ]);
-
-        if (in_array($request->status, ['discharged', 'transferred'])) {
-            if (!$request->discharge_date) {
-                return back()->withErrors(['discharge_date' => 'Discharge date is required when status is discharged or transferred.'])->withInput();
-            }
-
-            if ($request->discharge_date < $request->admission_date) {
-                return back()->withErrors(['discharge_date' => 'Discharge date must be after or equal to admission date.'])->withInput();
-            }
-        }
-
-        $dischargeDate = $request->status === 'active' ? null : $request->discharge_date;
-
-        $sensitiveData = [
-            'blood_type' => $request->blood_type,
-            'height' => $request->height,
-            'weight' => $request->weight,
-            'chronic_conditions' => $request->chronic_conditions,
-            'family_medical_history' => $request->family_medical_history,
-            'contact_number' => $request->contact_number,
-            'address' => $request->address
-        ];
-
-        $encryptedData = Crypt::encryptString(json_encode($sensitiveData));
-
-        Patient::create([
-            'name' => $request->name,
-            'date_of_birth' => $request->date_of_birth,
-            'gender' => $request->gender,
-            'contact_number' => $request->contact_number,
-            'address' => $request->address,
-            'medical_history' => $request->medical_history,
-            'allergies' => $request->allergies,
-            'current_medications' => $request->current_medications,
-            'admission_date' => $request->admission_date,
-            'discharge_date' => $dischargeDate,
-            'status' => $request->status,
-            'encrypted_data' => $encryptedData,
-            'doctor_id' => $request->doctor_id,
-            'nurse_id' => $request->nurse_id,
-        ]);
-
-        return redirect()->route('patients.index')->with('success', 'Patient added successfully.');
-    }
-
-public function showDetails(Patient $patient)
-{
-    try {
-        $decryptedData = json_decode(Crypt::decryptString($patient->encrypted_data), true);
-    } catch (\Exception $e) {
-        $decryptedData = [
-            'blood_type' => 'N/A',
-            'height' => 'N/A',
-            'weight' => 'N/A',
-            'chronic_conditions' => 'N/A',
-            'family_medical_history' => 'N/A',
-            'contact_number' => 'N/A',
-            'address' => 'N/A'
-        ];
-    }
-
-    return view('patients.details', [
-        'patient' => $patient,
-        'decryptedData' => $decryptedData
+// Test Route (Safe to remove for production)
+Route::get('/test', function () {
+    return response()->json([
+        'status' => 'working',
+        'database' => config('database.default'),
+        'time' => now(),
+        'admin_code_configured' => !empty(config('app.admin_access_code'))
     ]);
-}
+});
 
-    /**
-     * Show the form for editing a patient.
-     */
-    public function edit(Patient $patient)
-{
-    $user = auth()->user();
-
-    // Get doctors list based on user role
-    if ($user->isDoctor() && !$user->isAdmin()) {
-        // For non-admin doctors, only include themselves in the doctors list
-        $doctors = User::where('id', $user->id)->get();
-
-        // Verify the doctor has permission to edit this patient
-        if ($patient->doctor_id !== $user->id) {
-            abort(403, 'You are not authorized to edit this patient.');
-        }
-    } else {
-        // For admins or other roles, get all doctors
-        $doctors = User::where('role', 'doctor')->get();
-    }
-
-    // Get nurses list
-    $nurses = User::where('role', 'nurse')->get();
-
-    try {
-        $decryptedData = json_decode(Crypt::decryptString($patient->encrypted_data), true);
-    } catch (\Exception $e) {
-        $decryptedData = [
-            'blood_type' => '',
-            'height' => '',
-            'weight' => '',
-            'chronic_conditions' => '',
-            'family_medical_history' => '',
-            'contact_number' => '',
-            'address' => ''
-        ];
-    }
-
-    return view('patients.edit', compact('patient', 'doctors', 'nurses', 'decryptedData'));
-}
-
-    public function update(Request $request, Patient $patient)
-{
-    $user = auth()->user();
-
-    // For non-admin doctors, ensure they can't change the doctor assignment
-    if ($user->isDoctor() && !$user->isAdmin()) {
-        // Verify the doctor has permission to edit this patient
-        if ($patient->doctor_id !== $user->id) {
-            abort(403, 'You are not authorized to update this patient.');
-        }
-
-        // Force the doctor_id to be their own ID
-        $request->merge(['doctor_id' => $user->id]);
-    }
-
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'date_of_birth' => 'required|date',
-        'gender' => 'required|in:male,female,other',
-        'contact_number' => [
-            'required',
-            'string',
-            'max:20',
-            function ($attribute, $value, $fail) {
-                if (!preg_match('/^\+[0-9]{12,15}$/', $value)) {
-                    $fail('The contact number must start with + followed by 12 to 15 digits (e.g., +123456789012).');
-                }
-            },
-            Rule::unique('patients', 'contact_number')->ignore($patient->id)
-        ],
-        'address' => 'required|string|max:255',
-        'medical_history' => 'required|string',
-        'allergies' => 'required|string',
-        'current_medications' => 'required|string',
-        'admission_date' => 'required|date',
-        'discharge_date' => 'nullable|date|after_or_equal:admission_date',
-        'status' => 'required|in:active,discharged,transferred',
-        'doctor_id' => 'required_if:status,active|exists:users,id',
-        'nurse_id' => 'nullable|exists:users,id',
-        'blood_type' => 'required|string|max:10',
-        'height' => 'required|numeric|min:50|max:250',
-        'weight' => 'required|numeric|min:2|max:300',
-        'chronic_conditions' => 'required|string',
-        'family_medical_history' => 'required|string'
+// Environment Check Route (for debugging)
+Route::get('/env-check', function() {
+    return response()->json([
+        'env_value' => env('ADMIN_ACCESS_CODE'),
+        'config_value' => config('app.admin_access_code'),
+        'server_value' => $_SERVER['ADMIN_ACCESS_CODE'] ?? 'Not set',
+        'loaded_from' => 'env'
     ]);
+});
 
-    if (in_array($request->status, ['discharged', 'transferred'])) {
-        if (!$request->discharge_date) {
-            return back()->withErrors(['discharge_date' => 'Discharge date is required when status is discharged or transferred.'])->withInput();
-        }
+// Auth Routes (Handles login, registration, etc.)
+Auth::routes(['register' => true]);
 
-        if ($request->discharge_date < $request->admission_date) {
-            return back()->withErrors(['discharge_date' => 'Discharge date must be after or equal to admission date.'])->withInput();
-        }
+// Password Reset Routes - Updated and simplified
+Route::prefix('password')->name('password.')->group(function() {
+    // Request reset link
+    Route::get('/reset', [PasswordResetController::class, 'showRequestForm'])
+        ->name('request');
 
-        // Unassign doctor and nurse if status is discharged/transferred
-        $request->merge(['doctor_id' => null, 'nurse_id' => null]);
-    }
+    // Send reset code
+    Route::post('/email', [PasswordResetController::class, 'sendResetCode'])
+        ->name('email');
 
-    $dischargeDate = $request->status === 'active' ? null : $request->discharge_date;
+    // Code verification form
+    Route::get('/code-verify', [PasswordResetController::class, 'showVerifyCodeForm'])
+        ->name('code.verify');
 
-    $sensitiveData = [
-        'blood_type' => $request->blood_type,
-        'height' => $request->height,
-        'weight' => $request->weight,
-        'chronic_conditions' => $request->chronic_conditions,
-        'family_medical_history' => $request->family_medical_history,
-        'contact_number' => $request->contact_number,
-        'address' => $request->address
-    ];
+    // Process code verification
+    Route::post('/code-verify', [PasswordResetController::class, 'verifyCode'])
+        ->name('code.verify.submit');
 
-    $encryptedData = Crypt::encryptString(json_encode($sensitiveData));
+    // Show reset form (with token)
+    Route::get('/reset/{token}', [PasswordResetController::class, 'showResetForm'])
+        ->name('reset');
 
-    $patient->update([
-        'name' => $request->name,
-        'date_of_birth' => $request->date_of_birth,
-        'gender' => $request->gender,
-        'contact_number' => $request->contact_number,
-        'address' => $request->address,
-        'medical_history' => $request->medical_history,
-        'allergies' => $request->allergies,
-        'current_medications' => $request->current_medications,
-        'admission_date' => $request->admission_date,
-        'discharge_date' => $dischargeDate,
-        'status' => $request->status,
-        'encrypted_data' => $encryptedData,
-        'doctor_id' => $request->doctor_id,
-        'nurse_id' => $request->nurse_id,
+    // Process password reset
+    Route::post('/reset', [PasswordResetController::class, 'resetPassword'])
+        ->name('update');
+});
+
+// Admin code verification
+Route::post('/verify-admin-code', [AdminAccessController::class, 'verifyCode'])
+    ->name('admin.verify-code');
+
+// Protected Routes
+Route::middleware(['auth'])->group(function () {
+    // Home Dashboard
+    Route::get('/', [HomeController::class, 'index'])->name('home');
+    Route::get('/home', [HomeController::class, 'index']);
+
+    // Patient Management
+    Route::resource('patients', PatientController::class);
+
+    // Custom patient routes
+    Route::prefix('patients')->group(function () {
+        Route::get('/{patient}/history', [PatientController::class, 'showHistory'])
+            ->name('patients.history');
+        Route::post('/{patient}/record', [PatientController::class, 'storeRecord'])
+            ->name('patients.record.store');
+    });
+
+    // Medication Management
+    Route::resource('medications', MedicationController::class);
+
+    // Admin-only section
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/admin/dashboard', [HomeController::class, 'adminDashboard'])
+            ->name('admin.dashboard');
+
+        // User Management Routes
+        Route::prefix('admin/users')->group(function() {
+            Route::get('/', [UserManagementController::class, 'index'])->name('admin.users.index');
+            Route::get('/create', [UserManagementController::class, 'create'])->name('admin.users.create');
+            Route::post('/', [UserManagementController::class, 'store'])->name('admin.users.store');
+            Route::get('/{user}/edit', [UserManagementController::class, 'edit'])->name('admin.users.edit');
+            Route::put('/{user}', [UserManagementController::class, 'update'])->name('admin.users.update');
+        });
+
+        // Legacy UserController routes
+        Route::resource('users', UserController::class);
+    });
+});
+// Log routes (public but with controller-level protection)
+Route::prefix('admin')->group(function() {
+    Route::get('/logs', [LogController::class, 'index'])
+        ->name('admin.logs.index');
+    Route::post('/logs/clear', [LogController::class, 'clear'])
+        ->name('admin.logs.clear');
+});
+// Recent Patients Route
+Route::get('/patients/recent', [PatientController::class, 'recentPatients'])
+    ->name('patients.recent');
+
+// Reports & Doctors
+Route::prefix('reports')->group(function () {
+    Route::get('/generate', [ReportController::class, 'index'])->name('reports.generate');
+    Route::get('/staff', [ReportController::class, 'staff'])->name('reports.staff');
+    Route::get('/patients', [ReportController::class, 'patients'])->name('reports.patients');
+    Route::get('/appointments', [ReportController::class, 'appointments'])->name('reports.appointments');
+    Route::get('/medications', [ReportController::class, 'medications'])->name('reports.medications');
+});
+
+Route::resource('doctors', DoctorController::class);
+
+// Optional Public Pages
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+
+// Add this inside your auth middleware group (right after the medication routes)
+Route::resource('appointments', AppointmentController::class);
+Route::prefix('appointments')->group(function () {
+    Route::post('/{appointment}/cancel', [AppointmentController::class, 'cancel'])->name('appointments.cancel');
+    Route::post('/{appointment}/complete', [AppointmentController::class, 'complete'])->name('appointments.complete');
+    Route::post('/{appointment}/reschedule', [AppointmentController::class, 'reschedule'])->name('appointments.reschedule');
+});
+// Add these new profile routes (right after the above)
+Route::prefix('profile')->group(function() {
+    Route::get('/', [AppointmentController::class, 'showProfile'])->name('profile.show');
+    Route::get('/edit', [AppointmentController::class, 'editProfile'])->name('profile.edit');
+    Route::put('/', [AppointmentController::class, 'updateProfile'])->name('profile.update');
+});
+Route::resource('tasks', 'App\Http\Controllers\TaskController');
+Route::get('/patients/{patient}/details', [PatientController::class, 'showDetails'])->name('patients.details');
+// Debug Route for Admin Code
+Route::get('/debug-admin-code', function() {
+    return response()->json([
+        'env_code' => env('ADMIN_ACCESS_CODE'),
+        'config_code' => config('app.admin_access_code'),
+        'valid_length' => is_string(config('app.admin_access_code'))
+            ? strlen(config('app.admin_access_code'))
+            : 'invalid',
+        'is_digits' => is_string(config('app.admin_access_code'))
+            ? preg_match('/^\d{10}$/', config('app.admin_access_code'))
+            : false,
+        'all_config' => config('app')
     ]);
+});
 
-    return redirect()->route('patients.index')->with('success', 'Patient updated successfully.');
-}
-
-    /**
-     * Remove the specified patient from storage.
-     */
-    public function destroy(Patient $patient)
-    {
-        $patient->delete();
-        return redirect()->route('patients.index')->with('success', 'Patient deleted successfully.');
-    }
-
-    /**
-     * Fetch the recent patients.
-     */
-    public function recentPatients()
-    {
-        $recentPatients = Patient::with(['doctor', 'nurse'])
-            ->orderBy('created_at', 'desc')
-            ->take(5)
-            ->get();
-        return view('patients.recent', compact('recentPatients'));
-    }
-}
+// Fallback route for 404
+Route::fallback(function () {
+    return response()->view('errors.404', [], 404);
+});
