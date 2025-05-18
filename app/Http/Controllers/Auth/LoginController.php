@@ -19,25 +19,61 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
         $this->middleware('auth')->only('logout');
+
+        // Add proxy trust middleware
+        $this->middleware(function ($request, $next) {
+            $request->setTrustedProxies(
+                [$request->server->get('REMOTE_ADDR')], // Trust the immediate connection
+                Request::HEADER_X_FORWARDED_FOR |
+                Request::HEADER_X_FORWARDED_HOST |
+                Request::HEADER_X_FORWARDED_PORT |
+                Request::HEADER_X_FORWARDED_PROTO
+            );
+            return $next($request);
+        });
     }
 
     /**
-     * Override this to update user session details on login
+     * Get the real client IP address with proxy support
+     */
+    protected function getClientIp(Request $request): string
+    {
+        $ip = $request->ip();
+
+        // If we still get localhost, check headers directly
+        if (in_array($ip, ['127.0.0.1', '::1'])) {
+            $ip = $request->header('X-Forwarded-For') ??
+                  $request->header('X-Real-IP') ??
+                  $ip;
+
+            // Handle multiple IPs in X-Forwarded-For
+            if (str_contains($ip, ',')) {
+                $ips = explode(',', $ip);
+                $ip = trim($ips[0]); // Get the original client IP (first in chain)
+            }
+        }
+
+        return $ip ?: 'unknown';
+    }
+
+    /**
+     * Update user session details on login with real IP
      */
     protected function authenticated(Request $request, $user)
     {
+        $ip = $this->getClientIp($request);
+
         $user->update([
             'is_active' => 1,
             'last_login_at' => Carbon::now(),
-            'last_login_ip' => $request->ip(),
+            'last_login_ip' => $ip,
         ]);
 
-        // Log successful login
-        Log::info("User logged in: {$user->email} (ID: {$user->id}) from IP: {$request->ip()}");
+        Log::info("User logged in: {$user->email} (ID: {$user->id}) from IP: {$ip}");
     }
 
     /**
-     * Override logout to set is_active to false
+     * Handle logout with activity tracking
      */
     public function logout(Request $request)
     {
@@ -45,12 +81,11 @@ class LoginController extends Controller
 
         if ($user) {
             $user->update(['is_active' => 0]);
-            // Log logout action
-            Log::info("User logged out: {$user->email} (ID: {$user->id})");
+            $ip = $this->getClientIp($request);
+            Log::info("User logged out: {$user->email} (ID: {$user->id}) from IP: {$ip}");
         }
 
         Auth::logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
@@ -58,12 +93,12 @@ class LoginController extends Controller
     }
 
     /**
-     * Handle failed login attempts
+     * Handle failed login attempts with real IP
      */
     protected function sendFailedLoginResponse(Request $request)
     {
-        // Log failed login attempt
-        Log::warning("Failed login attempt for email: {$request->email} from IP: {$request->ip()}");
+        $ip = $this->getClientIp($request);
+        Log::warning("Failed login attempt for email: {$request->email} from IP: {$ip}");
 
         return redirect()->back()
             ->withInput($request->only($this->username(), 'remember'))
@@ -73,7 +108,7 @@ class LoginController extends Controller
     }
 
     /**
-     * Handle too many login attempts
+     * Handle lockouts with real IP
      */
     protected function sendLockoutResponse(Request $request)
     {
@@ -81,8 +116,8 @@ class LoginController extends Controller
             $this->throttleKey($request)
         );
 
-        // Log lockout event
-        Log::warning("Account locked due to too many login attempts for email: {$request->email} from IP: {$request->ip()}");
+        $ip = $this->getClientIp($request);
+        Log::warning("Account locked for email: {$request->email} from IP: {$ip}");
 
         return redirect()->back()
             ->withInput($request->only($this->username(), 'remember'))
