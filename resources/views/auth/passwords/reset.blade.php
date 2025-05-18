@@ -2,57 +2,52 @@
 
 @section('content')
 <style>
-    /* Keep your existing background styles */
     body {
         background: url('/images/login-bg.jpg') no-repeat center center fixed;
         background-size: cover;
         min-height: 100vh;
     }
 
-    /* Mobile-responsive form styles */
     .card {
         background-color: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(5px);
         border: none;
         width: 100%;
-        max-width: 500px; /* Maximum width on larger screens */
-        margin: 0 auto; /* Center the card */
+        max-width: 500px;
+        margin: 0 auto;
     }
 
-    /* Responsive adjustments */
     .reset-card-wrapper {
-        margin-left: 0; /* Remove the negative margin */
-        padding: 15px; /* Add padding on mobile */
+        margin-left: 0;
+        padding: 15px;
         width: 100%;
     }
 
-    /* Stack form elements vertically on small screens */
     @media (max-width: 768px) {
         .card-body {
             padding: 20px;
         }
 
         .form-control {
-            font-size: 16px; /* Larger text for mobile */
-            height: 48px; /* Larger touch targets */
+            font-size: 16px;
+            height: 48px;
         }
 
         .btn {
-            padding: 12px; /* Larger button for mobile */
+            padding: 12px;
             font-size: 16px;
         }
 
         .card-header h4 {
-            font-size: 1.25rem; /* Slightly smaller header on mobile */
+            font-size: 1.25rem;
         }
 
         .alert {
-            font-size: 14px; /* Better fit for mobile */
+            font-size: 14px;
             padding: 10px;
         }
     }
 
-    /* Larger screens adjustments */
     @media (min-width: 769px) {
         .reset-card-wrapper {
             padding: 0;
@@ -75,45 +70,22 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ url('/password/reset') }}" id="password-reset-form">
+                    <form method="POST" action="{{ url('/password/reset') }}">
                         @csrf
 
-                        <!-- Hidden Fields -->
                         <input type="hidden" name="email" value="{{ $email ?? old('email') }}">
                         <input type="hidden" name="token" value="{{ $token ?? old('token') }}">
 
-                        <!-- New Password -->
                         <div class="mb-3">
                             <label for="password" class="form-label text-muted">{{ __('New Password') }}</label>
-                            <input id="password" type="password"
-                                   class="form-control @error('password') is-invalid @enderror"
-                                   name="password" required autocomplete="new-password"
-                                   minlength="8"
-                                   placeholder="Enter new password">
-
-                            @error('password')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
+                            <input id="password" type="password" class="form-control" name="password" required autocomplete="new-password" placeholder="Enter new password">
                         </div>
 
-                        <!-- Confirm New Password -->
                         <div class="mb-4">
                             <label for="password-confirm" class="form-label text-muted">{{ __('Confirm Password') }}</label>
-                            <input id="password-confirm" type="password"
-                                   class="form-control @error('password_confirmation') is-invalid @enderror"
-                                   name="password_confirmation" required autocomplete="new-password"
-                                   placeholder="Confirm new password">
-
-                            @error('password_confirmation')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
+                            <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password" placeholder="Confirm new password">
                         </div>
 
-                        <!-- Display general errors -->
                         @if ($errors->any())
                             <div class="alert alert-danger mb-4">
                                 <ul class="mb-0">
@@ -135,32 +107,4 @@
         </div>
     </div>
 </div>
-@endsection
-
-@section('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('password-reset-form');
-
-            form.addEventListener('submit', function(e) {
-                // Client-side validation
-                const password = document.getElementById('password').value;
-                const confirmPassword = document.getElementById('password-confirm').value;
-
-                if (password !== confirmPassword) {
-                    e.preventDefault();
-                    alert('Passwords do not match!');
-                    return false;
-                }
-
-                if (password.length < 8) {
-                    e.preventDefault();
-                    alert('Password must be at least 8 characters!');
-                    return false;
-                }
-
-                return true;
-            });
-        });
-    </script>
 @endsection
