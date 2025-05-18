@@ -105,22 +105,23 @@
             </div>
         @endif
 
-        <!-- Appointment Overview Card -->
-        <div class="col-xl-3 col-lg-4 col-md-6">
-            <div class="card border-0 shadow-lg h-100">
-                <div class="card-body p-4 text-center">
-                    <div class="icon-circle bg-purple-light mb-4 mx-auto">
-                        <i class="fas fa-calendar-check text-purple fs-3"></i>
-                    </div>
-                    <h5 class="card-title text-dark mb-3">Appointment Overview</h5>
-                    <div class="chart-container mx-auto" style="height: 120px; width: 120px;">
-                        <canvas id="appointmentChart" width="120" height="120"></canvas>
-                    </div>
-                    <small class="text-muted mt-3">Appointments by status</small>
+        @if(auth()->user()->role === 'doctor' || auth()->user()->role === 'admin')
+    <!-- Appointment Overview Card -->
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <div class="card border-0 shadow-lg h-100">
+            <div class="card-body p-4 text-center">
+                <div class="icon-circle bg-purple-light mb-4 mx-auto">
+                    <i class="fas fa-calendar-check text-purple fs-3"></i>
                 </div>
+                <h5 class="card-title text-dark mb-3">Appointment Overview</h5>
+                <div class="chart-container mx-auto" style="height: 120px; width: 120px;">
+                    <canvas id="appointmentChart" width="120" height="120"></canvas>
+                </div>
+                <small class="text-muted mt-3">Appointments by status</small>
             </div>
         </div>
     </div>
+@endif
 </div>
 
 @push('styles')
