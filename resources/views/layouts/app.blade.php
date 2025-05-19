@@ -6,6 +6,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Healthcare System') }}</title>
+<link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+<!-- Favicon (ICO format) -->
+<link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
