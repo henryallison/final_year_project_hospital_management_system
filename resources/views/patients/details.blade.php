@@ -88,7 +88,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Admission Details</h5>
                     <p><strong>Admission Date:</strong> {{ $patient->admission_date->format('Y-m-d') }}</p>
-                    <p><strong>Discharge Date:</strong> {{ $patient->discharge_date ? $patient->discharge_date->format('Y-m-d') : 'N/A' }}</p>
+                    <p><strong>Discharge Date:</strong> {{ $patient->discharge_date ? $patient->discharge_date->format('Y-m-d') : 'Unknown' }}</p>
                     <p><strong>Status:</strong> {{ ucfirst($patient->status) }}</p>
                 </div>
             </div>
