@@ -130,13 +130,13 @@ public function showDetails(Patient $patient)
         $decryptedData = json_decode(Crypt::decryptString($patient->encrypted_data), true);
     } catch (\Exception $e) {
         $decryptedData = [
-            'blood_type' => 'N/A',
-            'height' => 'N/A',
-            'weight' => 'N/A',
-            'chronic_conditions' => 'N/A',
-            'family_medical_history' => 'N/A',
-            'contact_number' => 'N/A',
-            'address' => 'N/A'
+            'blood_type' => 'Unknown',
+            'height' => 'Unknown',
+            'weight' => 'Unknown',
+            'chronic_conditions' => 'Unknown',
+            'family_medical_history' => 'Unknown',
+            'contact_number' => 'Unknown',
+            'address' => 'Unknown'
         ];
     }
 
@@ -190,22 +190,20 @@ public function showDetails(Patient $patient)
     return view('patients.edit', compact('patient', 'doctors', 'nurses', 'decryptedData'));
 }
 
-    public function update(Request $request, Patient $patient)
+   public function update(Request $request, Patient $patient)
 {
     $user = auth()->user();
 
     // For non-admin doctors, ensure they can't change the doctor assignment
     if ($user->isDoctor() && !$user->isAdmin()) {
-        // Verify the doctor has permission to edit this patient
         if ($patient->doctor_id !== $user->id) {
             abort(403, 'You are not authorized to update this patient.');
         }
-
-        // Force the doctor_id to be their own ID
         $request->merge(['doctor_id' => $user->id]);
     }
 
-    $request->validate([
+    // Base validation rules
+    $rules = [
         'name' => 'required|string|max:255',
         'date_of_birth' => 'required|date',
         'gender' => 'required|in:male,female,other',
@@ -215,7 +213,7 @@ public function showDetails(Patient $patient)
             'max:20',
             function ($attribute, $value, $fail) {
                 if (!preg_match('/^\+[0-9]{12,15}$/', $value)) {
-                    $fail('The contact number must start with + followed by 12 to 15 digits (e.g., +123456789012).');
+                    $fail('The contact number must start with + followed by 12 to 15 digits.');
                 }
             },
             Rule::unique('patients', 'contact_number')->ignore($patient->id)
@@ -225,60 +223,63 @@ public function showDetails(Patient $patient)
         'allergies' => 'required|string',
         'current_medications' => 'required|string',
         'admission_date' => 'required|date',
-        'discharge_date' => 'nullable|date|after_or_equal:admission_date',
         'status' => 'required|in:active,discharged,transferred',
-        'doctor_id' => 'required_if:status,active|exists:users,id',
+        'doctor_id' => 'required|exists:users,id', // Changed to nullable
         'nurse_id' => 'nullable|exists:users,id',
         'blood_type' => 'required|string|max:10',
         'height' => 'required|numeric|min:50|max:250',
         'weight' => 'required|numeric|min:2|max:300',
         'chronic_conditions' => 'required|string',
         'family_medical_history' => 'required|string'
-    ]);
-
-    if (in_array($request->status, ['discharged', 'transferred'])) {
-        if (!$request->discharge_date) {
-            return back()->withErrors(['discharge_date' => 'Discharge date is required when status is discharged or transferred.'])->withInput();
-        }
-
-        if ($request->discharge_date < $request->admission_date) {
-            return back()->withErrors(['discharge_date' => 'Discharge date must be after or equal to admission date.'])->withInput();
-        }
-
-        // Unassign doctor and nurse if status is discharged/transferred
-        $request->merge(['doctor_id' => null, 'nurse_id' => null]);
-    }
-
-    $dischargeDate = $request->status === 'active' ? null : $request->discharge_date;
-
-    $sensitiveData = [
-        'blood_type' => $request->blood_type,
-        'height' => $request->height,
-        'weight' => $request->weight,
-        'chronic_conditions' => $request->chronic_conditions,
-        'family_medical_history' => $request->family_medical_history,
-        'contact_number' => $request->contact_number,
-        'address' => $request->address
     ];
 
-    $encryptedData = Crypt::encryptString(json_encode($sensitiveData));
+    // Conditional rules for discharge date
+    if ($request->status !== 'active') {
+        $rules['discharge_date'] = 'required|date|after_or_equal:admission_date';
+    }
 
-    $patient->update([
-        'name' => $request->name,
-        'date_of_birth' => $request->date_of_birth,
-        'gender' => $request->gender,
-        'contact_number' => $request->contact_number,
-        'address' => $request->address,
-        'medical_history' => $request->medical_history,
-        'allergies' => $request->allergies,
-        'current_medications' => $request->current_medications,
-        'admission_date' => $request->admission_date,
-        'discharge_date' => $dischargeDate,
-        'status' => $request->status,
-        'encrypted_data' => $encryptedData,
-        'doctor_id' => $request->doctor_id,
-        'nurse_id' => $request->nurse_id,
-    ]);
+    $validatedData = $request->validate($rules);
+
+    // Handle discharge date
+    $dischargeDate = $request->status === 'active' ? null : $validatedData['discharge_date'];
+
+    // Prepare sensitive data for encryption
+    $sensitiveData = [
+        'blood_type' => $validatedData['blood_type'],
+        'height' => $validatedData['height'],
+        'weight' => $validatedData['weight'],
+        'chronic_conditions' => $validatedData['chronic_conditions'],
+        'family_medical_history' => $validatedData['family_medical_history'],
+        'contact_number' => $validatedData['contact_number'],
+        'address' => $validatedData['address']
+    ];
+
+    try {
+        // Encrypt the sensitive data
+        $encryptedData = Crypt::encryptString(json_encode($sensitiveData));
+
+        // Update the patient record
+        $patient->update([
+            'name' => $validatedData['name'],
+            'date_of_birth' => $validatedData['date_of_birth'],
+            'gender' => $validatedData['gender'],
+            'contact_number' => $validatedData['contact_number'],
+            'address' => $validatedData['address'],
+            'medical_history' => $validatedData['medical_history'],
+            'allergies' => $validatedData['allergies'],
+            'current_medications' => $validatedData['current_medications'],
+            'admission_date' => $validatedData['admission_date'],
+            'discharge_date' => $dischargeDate,
+            'status' => $validatedData['status'],
+            'encrypted_data' => $encryptedData,
+            'doctor_id' => $validatedData['doctor_id'],
+            'nurse_id' => $validatedData['nurse_id']
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error("Patient update failed: " . $e->getMessage());
+        return back()->withErrors(['error' => 'Failed to update patient record. Please try again.'])->withInput();
+    }
 
     return redirect()->route('patients.index')->with('success', 'Patient updated successfully.');
 }
