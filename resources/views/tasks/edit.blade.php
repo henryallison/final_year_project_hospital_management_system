@@ -213,20 +213,22 @@ value="{{ old('due_date', isset($task) ? $task->due_date->format('Y-m-d\TH:i') :
                     @endif
                 </div>
 
-                <div class="d-flex justify-content-between mt-5 pt-3 border-top">
-                    <a href="{{ route('tasks.index') }}" class="btn btn-lg btn-outline-secondary px-4 rounded-pill bg-primary text-white">
-                        <i class="fas fa-arrow-left me-2 "></i>Cancel
-                    </a>
-                    <button type="submit" class="btn btn-lg btn-dark px-4 rounded-pill shadow-sm bg-primary text-white" id="submitBtn">
-                        <span id="submitText">
-                            <i class="fas fa-save me-2"></i>{{ isset($task) ? 'Update' : 'Create' }} Task
-                        </span>
-                        <span id="submitSpinner" class="d-none">
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            Processing...
-                        </span>
-                    </button>
-                </div>
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top gap-2 flex-wrap">
+    <a href="{{ route('tasks.index') }}" class="btn btn-sm btn-outline-secondary px-3 rounded-pill bg-primary text-white">
+        <i class="fas fa-arrow-left me-1"></i>Cancel
+    </a>
+
+    <button type="submit" class="btn btn-sm btn-dark px-3 rounded-pill shadow-sm bg-primary text-white" id="submitBtn">
+        <span id="submitText">
+            <i class="fas fa-save me-1"></i>{{ isset($task) ? 'Update' : 'Create' }} Task
+        </span>
+        <span id="submitSpinner" class="d-none">
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            Processing...
+        </span>
+    </button>
+</div>
+
             </form>
         </div>
     </div>
