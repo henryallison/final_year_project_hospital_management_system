@@ -172,9 +172,8 @@
                         @error('discharge_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
 
-                    <!-- Doctor (conditional) -->
-                    <!-- Doctor (conditional) -->
-<div class="col-md-6" id="doctorField" style="display: {{ $patient->status === 'active' ? 'block' : 'none' }}">
+                    <!-- Doctor Field - Remove conditional display -->
+<div class="col-md-6" id="doctorField">
     <label class="form-label">Assign Doctor</label>
     @if(auth()->user()->isAdmin())
         <select name="doctor_id" class="form-select @error('doctor_id') is-invalid @enderror">
@@ -193,19 +192,19 @@
     @error('doctor_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
 </div>
 
-                    <!-- Nurse (conditional) -->
-                    <div class="col-md-6" id="nurseField" style="display: {{ $patient->status === 'active' ? 'block' : 'none' }}">
-                        <label class="form-label">Assign Nurse (Optional)</label>
-                        <select name="nurse_id" class="form-select @error('nurse_id') is-invalid @enderror">
-                            <option value="">-- Select Nurse --</option>
-                            @foreach($nurses as $nurse)
-                                <option value="{{ $nurse->id }}" {{ old('nurse_id', $patient->nurse_id) == $nurse->id ? 'selected' : '' }}>
-                                    {{ $nurse->first_name }} {{ $nurse->last_name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('nurse_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
+<!-- Nurse Field - Remove conditional display -->
+<div class="col-md-6" id="nurseField">
+    <label class="form-label">Assign Nurse (Optional)</label>
+    <select name="nurse_id" class="form-select @error('nurse_id') is-invalid @enderror">
+        <option value="">-- Select Nurse --</option>
+        @foreach($nurses as $nurse)
+            <option value="{{ $nurse->id }}" {{ old('nurse_id', $patient->nurse_id) == $nurse->id ? 'selected' : '' }}>
+                {{ $nurse->first_name }} {{ $nurse->last_name }}
+            </option>
+        @endforeach
+    </select>
+    @error('nurse_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+</div>
                 </div>
 
                 <div class="mt-4">
@@ -222,26 +221,16 @@
         const statusSelect = document.getElementById('status');
         const dischargeDateField = document.getElementById('dischargeDateField');
         const dischargeDateInput = document.getElementById('discharge_date');
-        const doctorField = document.getElementById('doctorField');
-        const nurseField = document.getElementById('nurseField');
 
-        // Function to toggle fields based on status
+        // Function to toggle discharge date field
         function toggleFields() {
             if (statusSelect.value === 'active') {
                 dischargeDateField.style.display = 'none';
-                doctorField.style.display = 'block';
-                nurseField.style.display = 'block';
                 dischargeDateInput.removeAttribute('required');
                 dischargeDateInput.value = '';
             } else {
                 dischargeDateField.style.display = 'block';
-                doctorField.style.display = 'none';
-                nurseField.style.display = 'none';
                 dischargeDateInput.setAttribute('required', 'required');
-
-                // Clear doctor and nurse selection
-                document.querySelector('select[name="doctor_id"]').value = '';
-                document.querySelector('select[name="nurse_id"]').value = '';
             }
         }
 
