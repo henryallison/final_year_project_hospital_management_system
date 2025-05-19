@@ -14,21 +14,59 @@
             <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
-        <div class="d-flex justify-content-between mb-3">
-            <a href="{{ route('appointments.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Add New Appointment
-            </a>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+    <a href="{{ route('appointments.create') }}"
+       style="display: inline-flex;
+              align-items: center;
+              padding: 0.5rem 1rem;
+              font-size: 0.9rem;
+              font-weight: 400;
+              line-height: 1.5;
+              color: #fff;
+              background-color: #0d6efd;
+              border: 1px solid #0d6efd;
+              border-radius: 0.375rem;
+              text-decoration: none;
+              white-space: nowrap;
+              transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;">
+        <i class="fas fa-plus" style="margin-right: 0.5rem;"></i>Add New Appointment
+    </a>
 
-            <div class="d-flex gap-2">
-    <button class="btn btn-success" id="exportExcel">
-        <i class="fas fa-file-excel me-2"></i>Excel
-    </button>
-    <button class="btn btn-warning" id="exportCsv">
-        <i class="fas fa-file-csv me-2"></i>CSV
-    </button>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button id="exportExcel"
+                style="display: inline-flex;
+                       align-items: center;
+                       padding: 0.5rem 1rem;
+                       font-size: 0.9rem;
+                       font-weight: 400;
+                       line-height: 1.5;
+                       color: #fff;
+                       background-color: #198754;
+                       border: 1px solid #198754;
+                       border-radius: 0.375rem;
+                       cursor: pointer;
+                       white-space: nowrap;
+                       transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;">
+            <i class="fas fa-file-excel" style="margin-right: 0.5rem;"></i>Excel
+        </button>
+        <button id="exportCsv"
+                style="display: inline-flex;
+                       align-items: center;
+                       padding: 0.5rem 1rem;
+                       font-size: 0.9rem;
+                       font-weight: 400;
+                       line-height: 1.5;
+                       color: #000;
+                       background-color: #ffc107;
+                       border: 1px solid #ffc107;
+                       border-radius: 0.375rem;
+                       cursor: pointer;
+                       white-space: nowrap;
+                       transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;">
+            <i class="fas fa-file-csv" style="margin-right: 0.5rem;"></i>CSV
+        </button>
+    </div>
 </div>
-
-        </div>
 
         <!-- Search Box -->
         <div class="bg-white p-3 mb-3 rounded shadow-sm">
