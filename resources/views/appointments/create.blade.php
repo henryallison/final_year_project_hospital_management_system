@@ -56,19 +56,32 @@
                                     @enderror
                                 </div>
 
-                                <div class="col-md-6 mb-3">
-                                    <label for="status" class="form-label">Status</label>
-                                    <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
-                                        @foreach(['scheduled', 'completed', 'cancelled', 'rescheduled'] as $status)
-                                            <option value="{{ $status }}" {{ old('status', 'scheduled') == $status ? 'selected' : '' }}>
-                                                {{ ucfirst($status) }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('status')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                                <div class="col-md-6 mb-3" style="margin-bottom: 1rem;">
+    <label for="status" class="form-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Status</label>
+    <div class="form-control" style="display: block;
+                                    width: 100%;
+                                    padding: 0.375rem 0.75rem;
+                                    font-size: 1rem;
+                                    font-weight: 400;
+                                    line-height: 1.5;
+                                    color: #212529;
+                                    background-color: #f8f9fa;
+                                    background-clip: padding-box;
+                                    border: 1px solid #ced4da;
+                                    border-radius: 0.375rem;
+                                    cursor: not-allowed;">
+        Scheduled
+        <input type="hidden" name="status" value="scheduled">
+    </div>
+    @error('status')
+    <div class="invalid-feedback" style="width: 100%;
+                                        margin-top: 0.25rem;
+                                        font-size: 0.875em;
+                                        color: #dc3545;">
+        {{ $message }}
+    </div>
+    @enderror
+</div>
                             </div>
 
                             <div class="mb-3">
