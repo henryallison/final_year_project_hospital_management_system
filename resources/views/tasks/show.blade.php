@@ -125,27 +125,27 @@
             @endif
 
             <!-- Action Buttons -->
-            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-                <div class="d-flex gap-2">
-                    @can('update', $task)
-                        <a href="{{ route('tasks.edit', $task->id) }}" class="btn btn-warning px-4">
-                            <i class="fas fa-edit me-2"></i>Edit
-                        </a>
-                    @endcan
-                    @can('delete', $task)
-                        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" class="d-inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger px-4" onclick="return confirm('Are you sure you want to delete this task?')">
-                                <i class="fas fa-trash-alt me-2"></i>Delete
-                            </button>
-                        </form>
-                    @endcan
-                </div>
-                <a href="{{ route('tasks.index') }}" class="btn btn-outline-secondary px-4">
-                    <i class="fas fa-arrow-left me-2"></i>Back to List
-                </a>
-            </div>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #dee2e6; flex-wrap: wrap; gap: 0.5rem;">
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        @can('update', $task)
+            <a href="{{ route('tasks.edit', $task->id) }}" style="display: inline-flex; align-items: center; padding: 0.5rem 1.5rem; font-size: 0.875rem; font-weight: 500; color: #212529; background-color: #ffc107; border: 1px solid transparent; border-radius: 0.375rem; text-decoration: none; transition: all 0.15s ease-in-out;">
+                <i class="fas fa-edit" style="margin-right: 0.5rem;"></i>Edit
+            </a>
+        @endcan
+        @can('delete', $task)
+            <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" style="display: inline;">
+                @csrf
+                @method('DELETE')
+                <button type="submit" style="display: inline-flex; align-items: center; padding: 0.5rem 1.5rem; font-size: 0.875rem; font-weight: 500; color: #fff; background-color: #dc3545; border: 1px solid transparent; border-radius: 0.375rem; cursor: pointer; transition: all 0.15s ease-in-out;" onclick="return confirm('Are you sure you want to delete this task?')">
+                    <i class="fas fa-trash-alt" style="margin-right: 0.5rem;"></i>Delete
+                </button>
+            </form>
+        @endcan
+    </div>
+    <a href="{{ route('tasks.index') }}" style="display: inline-flex; align-items: center; padding: 0.5rem 1.5rem; font-size: 0.875rem; font-weight: 500; color: #6c757d; background-color: transparent; border: 1px solid #6c757d; border-radius: 0.375rem; text-decoration: none; transition: all 0.15s ease-in-out;">
+        <i class="fas fa-arrow-left" style="margin-right: 0.5rem;"></i>Back to List
+    </a>
+</div>
         </div>
     </div>
 </div>
